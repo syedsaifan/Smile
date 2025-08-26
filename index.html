@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smile Points 😃</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #0d1117;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ff88;
+    }
+    .points {
+      font-size: 2rem;
+      margin: 20px 0;
+    }
+    video {
+      border-radius: 10px;
+      margin-top: 20px;
+      width: 320px;
+      height: 240px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Smile karne se Points milte hain 😃</h1>
+  <p class="points">Points: <span id="counter">0</span></p>
+  <video id="video" autoplay muted></video>
+
+  <script>
+    let points = 0;
+
+    // load models first
+    Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/weights/"),
+      faceapi.nets.faceExpressionNet.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/weights/")
+    ]).then(startVideo);
+
+    function startVideo() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          document.getElementById("video").srcObject = stream;
+        })
+        .catch(err => console.error("Camera error:", err));
+    }
+
+    const video = document.getElementById("video");
+
+    video.addEventListener("play", () => {
+      setInterval(async () => {
+        const detections = await faceapi
+          .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+          .withFaceExpressions();
+
+        if (detections && detections.expressions.happy > 0.7) {
+          points++;
+          document.getElementById("counter").textContent = points;
+        }
+      }, 1000); // check every 1 second
+    });
+  </script>
+</body>
+</html>
